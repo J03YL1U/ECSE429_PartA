@@ -6,60 +6,22 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.jupiter.api.*;
-
-import java.io.IOException;
-import java.net.ConnectException;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 @TestMethodOrder(MethodOrderer.Random.class)
+@ExtendWith(CommonTests.class)
 public class TodosAPITests {
 
-    OkHttpClient client = new OkHttpClient();
-
-    @BeforeEach
-    public void startApi() {
-        try {
-            String filePath = "C:\\Users\\Joey\\OneDrive - McGill University\\Desktop\\MCGILLCourses\\FALL2023\\ECSE429\\" +
-                    "Application_Being_Tested\\runTodoManagerRestAPI-1.5.5.jar";
-            ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", filePath);
-            processBuilder.start();
-
-            Thread.sleep(200);
-
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url("http://localhost:4567/")
-                    .build();
-            Response response = client.newCall(request).execute();
-            if (!response.isSuccessful()) {
-                Assertions.fail("API is not running");
-            }
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @AfterEach
-    public void shutdownAPI() throws IOException {
-        try{
-            Request request = new Request.Builder()
-                    .url("http://localhost:4567/shutdown")
-                    .get()
-                    .build();
-            Response response = client.newCall(request).execute();
-        }catch(ConnectException e){
-            //server doesn't respond anymore after shutdown
-        }
-    }
-
+    //----------------------------------------------------------- http://localhost:4567/todos -----------------------------------------------------------//
     //return all the instances of todo
     @Test
-    public void todosGet() throws Exception {
+    public void testTodosGet() throws Exception {
         Request request = new Request.Builder()
                 .url("http://localhost:4567/todos")
                 .get()
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assert response.body() != null;
         assertEquals(200, response.code());
         assertEquals("OK", response.message());
@@ -67,20 +29,20 @@ public class TodosAPITests {
 
     //headers for all the instances of todo
     @Test
-    public void todosHead() throws Exception {
+    public void testTodosHead() throws Exception {
         Request request = new Request.Builder()
                 .url("http://localhost:4567/todos")
                 .head()
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(200, response.code());
         assertEquals("OK", response.message());
     }
 
     //Create todo without a ID using the field values in the body of the message
     @Test
-    public void todosPost() throws Exception {
+    public void testTodosPost() throws Exception {
         String title = "Joey";
         boolean doneStatus = false;
         String description =  "doesn't like to work";
@@ -98,7 +60,7 @@ public class TodosAPITests {
                 .post(requestBody)
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assert response.body() != null;
         String responseBody = response.body().string();
 
@@ -116,7 +78,7 @@ public class TodosAPITests {
 
     //method not allowed and not in api documentation
     @Test
-    public void todosPut() throws Exception {
+    public void testTodosPut() throws Exception {
         RequestBody dummyBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), "");
 
         Request request = new Request.Builder()
@@ -124,7 +86,7 @@ public class TodosAPITests {
                 .put(dummyBody)
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assert response.body() != null;
         assertEquals(405, response.code());
         assertEquals("Method Not Allowed", response.message());
@@ -132,13 +94,13 @@ public class TodosAPITests {
 
     //method not allowed and not in api documentation
     @Test
-    public void todosDelete() throws Exception {
+    public void testTodosDelete() throws Exception {
         Request request = new Request.Builder()
                 .url("http://localhost:4567/todos")
                 .delete()
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assert response.body() != null;
         assertEquals(405, response.code());
         assertEquals("Method Not Allowed", response.message());
@@ -146,7 +108,7 @@ public class TodosAPITests {
 
     //method not allowed and not in api documentation
     @Test
-    public void todosPatch() throws Exception {
+    public void testTodosPatch() throws Exception {
         RequestBody dummyBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), "");
 
         Request request = new Request.Builder()
@@ -154,21 +116,23 @@ public class TodosAPITests {
                 .patch(dummyBody)
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assert response.body() != null;
         assertEquals(405, response.code());
         assertEquals("Method Not Allowed", response.message());
     }
 
+    //----------------------------------------------------------- http://localhost:4567/todos/id -----------------------------------------------------------//
+
     //return a specific instances of todo using an id
     @Test
-    public void todosGetWithValidID() throws Exception {
+    public void testTodosGetWithValidID() throws Exception {
         Request request = new Request.Builder()
                 .url("http://localhost:4567/todos/1")
                 .get()
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(200, response.code());
 
         assert response.body() != null;
@@ -193,13 +157,13 @@ public class TodosAPITests {
 
     //get todo with invalid id
     @Test
-    public void todosGetWithInvalidID() throws Exception {
+    public void testTodosGetWithInvalidID() throws Exception {
         Request request = new Request.Builder()
                 .url("http://localhost:4567/todos/3")
                 .get()
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assert response.body() != null;
 
         assertEquals(404, response.code());
@@ -207,13 +171,13 @@ public class TodosAPITests {
     }
 
     @Test
-    public void todosHeadID() throws Exception {
+    public void testTodosHeadID() throws Exception {
         Request request = new Request.Builder()
                 .url("http://localhost:4567/todos/1")
                 .head()
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assert response.body() != null;
 
         assertEquals(200, response.code());
@@ -222,7 +186,7 @@ public class TodosAPITests {
 
     //given an existing id, amend a specific instances of todo using a id with a body containing the fields to amend
     @Test
-    public void todosPostWithValidID() throws Exception {
+    public void testTodosPostWithValidID() throws Exception {
         String title = "Joey";
         boolean doneStatus = false;
         String description =  "doesn't like to work";
@@ -240,7 +204,7 @@ public class TodosAPITests {
                 .post(requestBody)
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(200, response.code());
 
         assert response.body() != null;
@@ -260,7 +224,7 @@ public class TodosAPITests {
     }
 
     @Test
-    public void todosPostWithInvalidID() throws Exception {
+    public void testTodosPostWithInvalidID() throws Exception {
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), "");
 
         Request request = new Request.Builder()
@@ -268,13 +232,13 @@ public class TodosAPITests {
                 .post(requestBody)
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(404, response.code());
         assertEquals("Not Found", response.message());
     }
 
     @Test
-    public void todosPutWithValidID() throws Exception {
+    public void testTodosPutWithValidID() throws Exception {
         String title = "Joey";
         boolean doneStatus = false;
         String description =  "doesn't like to work";
@@ -292,7 +256,7 @@ public class TodosAPITests {
                 .put(requestBody)
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(200, response.code());
 
         assert response.body() != null;
@@ -312,7 +276,7 @@ public class TodosAPITests {
     }
 
     @Test
-    public void todosPutWithInvalidID() throws Exception {
+    public void testTodosPutWithInvalidID() throws Exception {
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), "");
 
         Request request = new Request.Builder()
@@ -320,37 +284,37 @@ public class TodosAPITests {
                 .put(requestBody)
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(404, response.code());
         assertEquals("Not Found", response.message());
     }
 
     @Test
-    public void todosDeleteWithInvalidID() throws Exception {
+    public void testTodosDeleteWithInvalidID() throws Exception {
         Request request = new Request.Builder()
                 .url("http://localhost:4567/todos/3")
                 .delete()
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(404, response.code());
         assertEquals("Not Found", response.message());
     }
 
     @Test
-    public void todosDeleteWithValidID() throws Exception {
+    public void testTodosDeleteWithValidID() throws Exception {
         Request request = new Request.Builder()
                 .url("http://localhost:4567/todos/1")
                 .delete()
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(200, response.code());
         assertEquals("OK", response.message());
     }
 
     @Test
-    public void todosPatchWithValidID() throws Exception {
+    public void testTodosPatchWithValidID() throws Exception {
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), "");
 
         Request request = new Request.Builder()
@@ -358,15 +322,288 @@ public class TodosAPITests {
                 .patch(requestBody)
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(405, response.code());
         assertEquals("Method Not Allowed", response.message());
     }
 
+    //----------------------------------------------------------- http://localhost:4567/todos/id/tasksof -----------------------------------------------------------//
+    @Test
+    public void testTodosTasksOfHeadWithValidID() throws Exception {
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/1/tasksof")
+                .head()
+                .build();
 
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(200, response.code());
+        assertEquals("OK", response.message());
+    }
 
+    @Test
+    public void testTodosTasksOfHeadWithInvalidID() throws Exception {
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/5/tasksof")
+                .head()
+                .build();
 
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(200, response.code());
+        assertEquals("OK", response.message());
+    }
 
+    @Test
+    public void testTodosTasksOfPostWithValidID() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", "1");
 
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
 
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/2/tasksof")
+                .post(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(201, response.code());
+        assertEquals("Created", response.message());
+    }
+
+    @Test
+    public void testTodosTasksOfPostWithInvalidID() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", "1");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/6/tasksof")
+                .post(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(404, response.code());
+        assertEquals("Not Found", response.message());
+    }
+
+    @Test
+    public void testTodosTasksOfPut() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", "1");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/1/tasksof")
+                .put(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(405, response.code());
+        assertEquals("Method Not Allowed", response.message());
+    }
+
+    @Test
+    public void testTodosTasksOfDelete() throws Exception {
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/1/tasksof")
+                .delete()
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(405, response.code());
+        assertEquals("Method Not Allowed", response.message());
+    }
+
+    @Test
+    public void testTodosTasksOfPatch() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", "1");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/1/tasksof")
+                .patch(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(405, response.code());
+        assertEquals("Method Not Allowed", response.message());
+    }
+
+    //----------------------------------------------------------- http://localhost:4567/todos/id/categories -----------------------------------------------------------//
+
+    @Test
+    public void testTodosCategoriesGetWithValidID() throws Exception {
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/1/categories")
+                .get()
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+
+        assert response.body() != null;
+        String responseBody = response.body().string();
+
+        assertEquals(200, response.code());
+        assertEquals("OK", response.message());
+
+        JSONParser parser = new JSONParser();
+        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
+        JSONArray categories = (JSONArray) responseJson.get("categories");
+
+        for (Object categoryObj : categories) {
+            JSONObject category = (JSONObject) categoryObj;
+            String id = (String) category.get("id");
+            String title = (String) category.get("title");
+            String description = (String) category.get("description");
+            assertEquals("1", id);
+            assertEquals("Office", title);
+            assertEquals("", description);
+        }
+    }
+
+    @Test
+    public void testTodosCategoriesGetWith2ndValidID() throws Exception {
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/2/categories")
+                .get()
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+
+        assert response.body() != null;
+        String responseBody = response.body().string();
+
+        assertEquals(200, response.code());
+        assertEquals("OK", response.message());
+
+        JSONParser parser = new JSONParser();
+        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
+        JSONArray categories = (JSONArray) responseJson.get("categories");
+
+        assertEquals(0, categories.size());
+    }
+
+    @Test
+    public void testTodosCategoriesHeadWithValidID() throws Exception {
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/1/categories")
+                .head()
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+
+        assertEquals(200, response.code());
+        assertEquals("OK", response.message());
+    }
+
+    @Test
+    public void testTodosCategoriesPostWithValidID() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", "1");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/2/categories")
+                .post(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+
+        assertEquals(201, response.code());
+        assertEquals("Created", response.message());
+    }
+
+    @Test
+    public void testTodosCategoriesPostWithInvalidID() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", "1");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/4/categories")
+                .post(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+
+        assertEquals(404, response.code());
+        assertEquals("Not Found", response.message());
+    }
+
+    @Test
+    public void testTodosCategoriesPostWithInvalidCategoryID() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", "9");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/1/categories")
+                .post(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+
+        assertEquals(404, response.code());
+        assertEquals("Not Found", response.message());
+    }
+
+    @Test
+    public void testTodosCategoriesPutWithValidID() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", "1");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/1/categories")
+                .put(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+
+        assertEquals(405, response.code());
+        assertEquals("Method Not Allowed", response.message());
+    }
+
+    @Test
+    public void testTodosCategoriesDeleteWithValidID() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", "1");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/1/categories")
+                .delete(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+
+        assertEquals(405, response.code());
+        assertEquals("Method Not Allowed", response.message());
+    }
+
+    @Test
+    public void testTodosCategoriesPatchWithValidID() throws Exception {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("id", "1");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos/1/categories")
+                .patch(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+
+        assertEquals(405, response.code());
+        assertEquals("Method Not Allowed", response.message());
+    }
 }

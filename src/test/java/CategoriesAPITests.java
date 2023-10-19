@@ -134,7 +134,7 @@ public class CategoriesAPITests {
 
     //method not allowed and not in api documentation
     @Test
-    public void testCategoriesPut() throws Exception {
+    public void testCategoriesInvalidPut() throws Exception {
         RequestBody dummyBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), "");
 
         Request request = new Request.Builder()
@@ -147,7 +147,6 @@ public class CategoriesAPITests {
         assertEquals(405, response.code());
         assertEquals("Method Not Allowed", response.message());
     }
-
     //method not allowed and not in api documentation
     @Test
     public void testCategoriesDelete() throws Exception {
@@ -160,6 +159,30 @@ public class CategoriesAPITests {
         assert response.body() != null;
         assertEquals(405, response.code());
         assertEquals("Method Not Allowed", response.message());
+    }
+
+    //Create categories with and ID
+    @Test
+    public void testCategoriesMalformedJsonPost() throws Exception {
+        String title = "ECSE 429";
+        String id = "100";
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("title", title);
+        jsonObject.put("tfdsuvaej", id);
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories")
+                .post(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+        assertEquals(400, response.code());
+        assertEquals("Bad Request", response.message());
     }
 
     //method not allowed and not in api documentation
@@ -626,6 +649,17 @@ public class CategoriesAPITests {
     }
 
     @Test
+    public void testInvalidCategoriesTodosHead() throws Exception {
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/10/todos")
+                .head()
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(200, response.code());
+    }
+
+    @Test
     public void testCategoriesGetTodos() throws Exception {
         Request request = new Request.Builder()
                 .url("http://localhost:4567/categories/1/todos")
@@ -634,6 +668,16 @@ public class CategoriesAPITests {
         Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(200, response.code());
         assertEquals("OK", response.message());
+    }
+
+    @Test
+    public void testCategoriesGetTodosInvalidCategory() throws Exception {
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/8/todos")
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(200, response.code());
     }
 
     //----------------------------------------------------------- http://localhost:4567/categories/:id/todos/:id -----------------------------------------------------------//

@@ -541,6 +541,169 @@ public class CategoriesAPITests {
         assertEquals("Not Found", response.message());
     }
 
+    //----------------------------------------------------------- http://localhost:4567/categories/:id/todos -----------------------------------------------------------//
+
+    @Test
+    public void testCategoriesPostExistingTodos() throws Exception {
+        String title = "pumpkin";
+        String description =  "spice!";
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("id", "1");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/todos")
+                .post(requestBody)
+                .build();
+
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+        String responseBody = response.body().string();
+
+        assertEquals(201, response.code());
+        assertEquals("Created", response.message());
+    }
+
+    @Test
+    public void testCategoriesPostNewTodos() throws Exception {
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("title", "latte");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/todos")
+                .post(requestBody)
+                .build();
+
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+        assertEquals(201, response.code());
+        assertEquals("Created", response.message());
+    }
+
+    @Test
+    public void testCategoriesPostInvalidTodos() throws Exception {
+        String title = "pumpkin";
+        String description =  "spice!";
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("id", "10");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/todos")
+                .post(requestBody)
+                .build();
+
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+
+        assertEquals(404, response.code());
+        assertEquals("Not Found", response.message());
+    }
+
+    @Test
+    public void testCategoriesTodosHead() throws Exception {
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/todos")
+                .head()
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(200, response.code());
+        assertEquals("OK", response.message());
+    }
+
+    @Test
+    public void testCategoriesGetTodos() throws Exception {
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/todos")
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(200, response.code());
+        assertEquals("OK", response.message());
+    }
+
+    //----------------------------------------------------------- http://localhost:4567/categories/:id/todos/:id -----------------------------------------------------------//
+
+    @Test
+    public void testCategoriesDeleteValidTodos() throws Exception {
+        String title = "pumpkin";
+        String description =  "spice!";
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("id", "1");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/todos")
+                .post(requestBody)
+                .build();
+
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+
+        request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/todos/1")
+                .delete()
+                .build();
+
+
+        response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+
+        assertEquals(200, response.code());
+        assertEquals("OK", response.message());
+    }
+
+    @Test
+    public void testCategoriesDeleteInvalidTodos() throws Exception {
+        String title = "pumpkin";
+        String description =  "spice!";
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("id", "10");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/todos")
+                .post(requestBody)
+                .build();
+
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+
+        request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/todos/1")
+                .delete()
+                .build();
+
+
+        response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+
+        assertEquals(404, response.code());
+        assertEquals("Not Found", response.message());
+    }
+
 
 
 }

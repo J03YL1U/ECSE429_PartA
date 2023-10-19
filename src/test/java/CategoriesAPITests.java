@@ -42,7 +42,7 @@ public class CategoriesAPITests {
 
     //Create categories without a ID using the field values in the body of the message
     @Test
-    public void testcategoriesFullPost() throws Exception {
+    public void testCategoriesFullPost() throws Exception {
         String title = "ECSE 429";
         String description =  "software validation!";
 
@@ -77,7 +77,7 @@ public class CategoriesAPITests {
 
     //Create categories with only title in the body of the message
     @Test
-    public void testcategoriesTitlePost() throws Exception {
+    public void testCategoriesTitlePost() throws Exception {
         String title = "ECSE 429";
 
         JSONObject jsonObject = new JSONObject();
@@ -110,7 +110,7 @@ public class CategoriesAPITests {
 
     //Create categories with and ID
     @Test
-    public void testcategoriesIDPost() throws Exception {
+    public void testCategoriesIDPost() throws Exception {
         String title = "ECSE 429";
         String id = "100";
 
@@ -134,7 +134,7 @@ public class CategoriesAPITests {
 
     //method not allowed and not in api documentation
     @Test
-    public void testcategoriesPut() throws Exception {
+    public void testCategoriesPut() throws Exception {
         RequestBody dummyBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), "");
 
         Request request = new Request.Builder()
@@ -150,7 +150,7 @@ public class CategoriesAPITests {
 
     //method not allowed and not in api documentation
     @Test
-    public void testcategoriesDelete() throws Exception {
+    public void testCategoriesDelete() throws Exception {
         Request request = new Request.Builder()
                 .url("http://localhost:4567/categories")
                 .delete()
@@ -164,7 +164,7 @@ public class CategoriesAPITests {
 
     //method not allowed and not in api documentation
     @Test
-    public void testcategoriesPatch() throws Exception {
+    public void testCategoriesPatch() throws Exception {
         RequestBody dummyBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), "");
 
         Request request = new Request.Builder()
@@ -373,6 +373,174 @@ public class CategoriesAPITests {
         assertEquals(405, response.code());
         assertEquals("Method Not Allowed", response.message());
     }
+
+    //----------------------------------------------------------- http://localhost:4567/categories/:id/projects -----------------------------------------------------------//
+
+    @Test
+    public void testCategoriesPostExistingProjects() throws Exception {
+        String title = "pumpkin";
+        String description =  "spice!";
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("id", "1");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/projects")
+                .post(requestBody)
+                .build();
+
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+        String responseBody = response.body().string();
+
+        assertEquals(201, response.code());
+        assertEquals("Created", response.message());
+    }
+
+    @Test
+    public void testCategoriesPostNewProjects() throws Exception {
+        String title = "pumpkin";
+        String description =  "spice!";
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("title", "latte");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/projects")
+                .post(requestBody)
+                .build();
+
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+        String responseBody = response.body().string();
+
+        assertEquals(201, response.code());
+        assertEquals("Created", response.message());
+    }
+
+    @Test
+    public void testCategoriesPostInvalidProjects() throws Exception {
+        String title = "pumpkin";
+        String description =  "spice!";
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("id", "10");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/projects")
+                .post(requestBody)
+                .build();
+
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+
+        assertEquals(404, response.code());
+        assertEquals("Not Found", response.message());
+    }
+
+    @Test
+    public void testCategoriesProjectsHead() throws Exception {
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/projects")
+                .head()
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(200, response.code());
+        assertEquals("OK", response.message());
+    }
+
+    @Test
+    public void testCategoriesGetProjects() throws Exception {
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/projects")
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(200, response.code());
+        assertEquals("OK", response.message());
+    }
+
+    //----------------------------------------------------------- http://localhost:4567/categories/:id/projects/:id -----------------------------------------------------------//
+
+    @Test
+    public void testCategoriesDeleteValidProjects() throws Exception {
+        String title = "pumpkin";
+        String description =  "spice!";
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("id", "1");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/projects")
+                .post(requestBody)
+                .build();
+
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+
+        request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/projects/1")
+                .delete()
+                .build();
+
+
+        response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+
+        assertEquals(200, response.code());
+        assertEquals("OK", response.message());
+    }
+
+    @Test
+    public void testCategoriesDeleteInvalidProjects() throws Exception {
+        String title = "pumpkin";
+        String description =  "spice!";
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("id", "10");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/projects")
+                .post(requestBody)
+                .build();
+
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+
+        request = new Request.Builder()
+                .url("http://localhost:4567/categories/1/projects/1")
+                .delete()
+                .build();
+
+
+        response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+
+        assertEquals(404, response.code());
+        assertEquals("Not Found", response.message());
+    }
+
 
 
 }

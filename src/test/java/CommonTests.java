@@ -17,7 +17,7 @@ public class CommonTests implements BeforeTestExecutionCallback, AfterTestExecut
             ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", filePath);
             processBuilder.start();
 
-            Thread.sleep(500);
+            Thread.sleep(600);
 
             Request request = new Request.Builder()
                     .url("http://localhost:4567/")
@@ -31,16 +31,17 @@ public class CommonTests implements BeforeTestExecutionCallback, AfterTestExecut
         }
     }
 
-    public void afterTestExecution(ExtensionContext context) {
+    public void afterTestExecution(ExtensionContext context)  {
         try {
             Request request = new Request.Builder()
                     .url("http://localhost:4567/shutdown")
                     .get()
                     .build();
             client.newCall(request).execute();
+            Thread.sleep(400);
         } catch (ConnectException e) {
             // Server doesn't respond anymore after shutdown; no need for further action.
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Error shutting down the API: " + e.getMessage(), e);
         }
     }

@@ -44,38 +44,24 @@ public class TodosAPITests {
     //Create todo without a ID using the field values in the body of the message
     @Test
     public void testTodosPost() throws Exception {
+        // check todo object before post request
+        JSONArray initialTodos = fetchTodoList("http://localhost:4567/todos");
+
+        // Create a new TODO item
         String title = "Joey";
         boolean doneStatus = false;
-        String description =  "doesn't like to work";
+        String description = "doesn't like to work";
 
-        JSONObject jsonObject = new JSONObject();
+        JSONObject newTodo = createNewTodoObject(title, doneStatus, description);
 
-        jsonObject.put("title", title);
-        jsonObject.put("doneStatus", doneStatus);
-        jsonObject.put("description", description);
+        //Send a POST request to add the new TODO item
+        sendPostRequestToCreateTodoItem(newTodo, "http://localhost:4567/todos", 201);
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+        //Fetch TODO items again
+        JSONArray updatedTodos = fetchTodoList("http://localhost:4567/todos");
 
-        Request request = new Request.Builder()
-                .url("http://localhost:4567/todos")
-                .post(requestBody)
-                .build();
-
-        Response response = CommonTests.getClient().newCall(request).execute();
-        assertEquals(201, response.code());
-        assert response.body() != null;
-        String responseBody = response.body().string();
-
-        JSONParser parser = new JSONParser();
-        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
-
-        String responseTitle = (String) responseJson.get("title");
-        boolean responseStatus = Boolean.parseBoolean((String) responseJson.get("doneStatus"));
-        String responseDescription = (String) responseJson.get("description");
-
-        assertEquals(title, responseTitle);
-        assertEquals(doneStatus, responseStatus);
-        assertEquals(description, responseDescription);
+        //Verify the previous TODO items are still there, and the new one is created
+        verifyTodoItemsAreUpdated(initialTodos, updatedTodos);
     }
 
     //method not allowed and not in api documentation
@@ -149,11 +135,11 @@ public class TodosAPITests {
             String id = (String) todo.get("id");
             String title = (String) todo.get("title");
             String description = (String) todo.get("description");
-            String doneStatus = (String) todo.get("doneStatus");
+            boolean doneStatus = Boolean.parseBoolean(String.valueOf(todo.get("doneStatus")));
             assertEquals("1", id);
             assertEquals("scan paperwork", title);
             assertEquals("", description);
-            assertEquals("false", doneStatus);
+            assertFalse(doneStatus);
         }
     }
 
@@ -189,40 +175,39 @@ public class TodosAPITests {
     //given an existing id, amend a specific instances of todo using a id with a body containing the fields to amend
     @Test
     public void testTodosPostWithValidID() throws Exception {
+        // Step 2: Create a new TODO item
         String title = "Joey";
         boolean doneStatus = false;
-        String description =  "doesn't like to work";
+        String description = "doesn't like to work";
 
-        JSONObject jsonObject = new JSONObject();
+        JSONObject newTodo = createNewTodoObject(title, doneStatus, description);
 
-        jsonObject.put("title", title);
-        jsonObject.put("doneStatus", doneStatus);
-        jsonObject.put("description", description);
+        //Send a POST request to add the new TODO item
+        sendPostRequestToCreateTodoItem(newTodo, "http://localhost:4567/todos/1", 200);
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+        //Fetch TODO items again
+        JSONArray updatedTodos = fetchTodoList("http://localhost:4567/todos");
 
-        Request request = new Request.Builder()
-                .url("http://localhost:4567/todos/1")
-                .post(requestBody)
-                .build();
+        //Verify if new list is correct
+        for(Object todoObject: updatedTodos){
+            JSONObject todo = (JSONObject) todoObject;
+            String id = (String) todo.get("id");
+            String titleCheck = (String) todo.get("title");
+            String descriptionCheck = (String) todo.get("description");
+            boolean doneStatusCheck = Boolean.parseBoolean(String.valueOf(todo.get("doneStatus")));
 
-        Response response = CommonTests.getClient().newCall(request).execute();
-        assertEquals(200, response.code());
+            if(id.equals("1")){
+                assertEquals(title, titleCheck);
+                assertEquals(description, descriptionCheck);
+                assertFalse(doneStatusCheck);
+            }
 
-        assert response.body() != null;
-        String responseBody = response.body().string();
-
-        JSONParser parser = new JSONParser();
-        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
-
-        String id = (String) responseJson.get("id");
-        String actualTitle = (String) responseJson.get("title");
-        String actualDescription = (String) responseJson.get("description");
-        String actualDoneStatus = (String) responseJson.get("doneStatus");
-        assertEquals("1", id);
-        assertEquals(title, actualTitle);
-        assertEquals(description, actualDescription);
-        assertEquals(Boolean.toString(doneStatus), actualDoneStatus);
+            if(id.equals("2")){
+                assertEquals("file paperwork", titleCheck);
+                assertEquals("", descriptionCheck);
+                assertFalse(doneStatusCheck);
+            }
+        }
     }
 
     @Test
@@ -241,40 +226,39 @@ public class TodosAPITests {
 
     @Test
     public void testTodosPutWithValidID() throws Exception {
+        //Create a new TODO item
         String title = "Joey";
         boolean doneStatus = false;
-        String description =  "doesn't like to work";
+        String description = "doesn't like to work";
 
-        JSONObject jsonObject = new JSONObject();
+        JSONObject newTodo = createNewTodoObject(title, doneStatus, description);
 
-        jsonObject.put("title", title);
-        jsonObject.put("doneStatus", doneStatus);
-        jsonObject.put("description", description);
+        //Send a POST request to add the new TODO item
+        sendPutRequestToCreateTodoItem(newTodo, "http://localhost:4567/todos/1", 200);
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+        //Fetch TODO items again
+        JSONArray updatedTodos = fetchTodoList("http://localhost:4567/todos");
 
-        Request request = new Request.Builder()
-                .url("http://localhost:4567/todos/1")
-                .put(requestBody)
-                .build();
+        //Verify if new list is correct
+        for(Object todoObject: updatedTodos){
+            JSONObject todo = (JSONObject) todoObject;
+            String id = (String) todo.get("id");
+            String titleCheck = (String) todo.get("title");
+            String descriptionCheck = (String) todo.get("description");
+            boolean doneStatusCheck = Boolean.parseBoolean(String.valueOf(todo.get("doneStatus")));
 
-        Response response = CommonTests.getClient().newCall(request).execute();
-        assertEquals(200, response.code());
+            if(id.equals("1")){
+                assertEquals(title, titleCheck);
+                assertEquals(description, descriptionCheck);
+                assertFalse(doneStatusCheck);
+            }
 
-        assert response.body() != null;
-        String responseBody = response.body().string();
-
-        JSONParser parser = new JSONParser();
-        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
-
-        String id = (String) responseJson.get("id");
-        String actualTitle = (String) responseJson.get("title");
-        String actualDescription = (String) responseJson.get("description");
-        String actualDoneStatus = (String) responseJson.get("doneStatus");
-        assertEquals("1", id);
-        assertEquals(title, actualTitle);
-        assertEquals(description, actualDescription);
-        assertEquals(Boolean.toString(doneStatus), actualDoneStatus);
+            if(id.equals("2")){
+                assertEquals("file paperwork", titleCheck);
+                assertEquals("", descriptionCheck);
+                assertFalse(doneStatusCheck);
+            }
+        }
     }
 
     @Test
@@ -313,6 +297,29 @@ public class TodosAPITests {
         Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(200, response.code());
         assertEquals("OK", response.message());
+
+        //Fetch TODO items again
+        JSONArray updatedTodos = fetchTodoList("http://localhost:4567/todos");
+
+        //Verify if new list is correct
+        for(Object todoObject: updatedTodos){
+            JSONObject todo = (JSONObject) todoObject;
+            String id = (String) todo.get("id");
+            String titleCheck = (String) todo.get("title");
+            String descriptionCheck = (String) todo.get("description");
+            boolean doneStatusCheck = Boolean.parseBoolean(String.valueOf(todo.get("doneStatus")));
+
+            if(id.equals("1")){
+                Assertions.fail();
+            }
+
+            if(id.equals("2")){
+                assertEquals("file paperwork", titleCheck);
+                assertEquals("", descriptionCheck);
+                assertFalse(doneStatusCheck);
+            }
+        }
+
     }
 
     @Test
@@ -356,6 +363,9 @@ public class TodosAPITests {
 
     @Test
     public void testTodosTasksOfPostWithValidID() throws Exception {
+        // check todo object before post request
+        JSONArray initialTodos = fetchTodoList("http://localhost:4567/todos");
+
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", "1");
 
@@ -369,6 +379,12 @@ public class TodosAPITests {
         Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(201, response.code());
         assertEquals("Created", response.message());
+
+        //Fetch TODO items again
+        JSONArray updatedTodos = fetchTodoList("http://localhost:4567/todos");
+
+        //Verify the previous TODO items are still there, and the new one is created
+        verifyTodoItemsAreUpdated(initialTodos, updatedTodos);
     }
 
     @Test
@@ -503,6 +519,9 @@ public class TodosAPITests {
 
     @Test
     public void testTodosCategoriesPostWithValidID() throws Exception {
+        // check todo object before post request
+        JSONArray initialTodos = fetchTodoList("http://localhost:4567/todos");
+
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", "1");
 
@@ -517,6 +536,12 @@ public class TodosAPITests {
 
         assertEquals(201, response.code());
         assertEquals("Created", response.message());
+
+        //Fetch TODO items again
+        JSONArray updatedTodos = fetchTodoList("http://localhost:4567/todos");
+
+        //Verify the previous TODO items are still there, and the new one is created
+        verifyTodoItemsAreUpdated(initialTodos, updatedTodos);
     }
 
     @Test
@@ -640,7 +665,7 @@ public class TodosAPITests {
 
         String xmlString = XML.toString(jsonObject);
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/xml; charset=utf-8"), xmlString.toString());
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/xml; charset=utf-8"), xmlString);
 
         Request request = new Request.Builder()
                 .url("http://localhost:4567/todos")
@@ -897,6 +922,9 @@ public class TodosAPITests {
 
     @Test
     public void testTodoTaskOfIDDeleteDoubleInvalid() throws Exception {
+        //check todo object before post request
+        JSONArray initialTodos = fetchTodoList("http://localhost:4567/todos");
+
         Request request = new Request.Builder()
             .url("http://localhost:4567/todos/1/tasksof/1")
             .delete()
@@ -913,10 +941,18 @@ public class TodosAPITests {
        response = CommonTests.getClient().newCall(request).execute();
        assertEquals(404, response.code());
 
+        //Fetch TODO items again
+        JSONArray updatedTodos = fetchTodoList("http://localhost:4567/todos");
+
+        // Step 5: Verify the previous TODO items are still there, and the new one is created
+        verifyTodoItemsAreUpdated(initialTodos, updatedTodos);
     }
 
     @Test
     public void testTodoTaskOfIDDeleteValid() throws Exception {
+        //check todo object before post request
+        JSONArray initialTodos = fetchTodoList("http://localhost:4567/todos");
+
         Request request = new Request.Builder()
             .url("http://localhost:4567/todos/1/tasksof/1")
             .delete()
@@ -925,6 +961,11 @@ public class TodosAPITests {
         Response response = CommonTests.getClient().newCall(request).execute();
         assertEquals(200, response.code());
 
+        //Fetch TODO items again
+        JSONArray updatedTodos = fetchTodoList("http://localhost:4567/todos");
+
+        // Step 5: Verify the previous TODO items are still there, and the new one is created
+        verifyTodoItemsAreUpdated(initialTodos, updatedTodos);
     }
     
     //method not allowed and not in api documentation
@@ -979,16 +1020,111 @@ public class TodosAPITests {
         JSONArray firstProjectTasks = (JSONArray) firstProject.get("tasks");
 
         boolean found = false;
-        for (int i = 0; i < firstProjectTasks.size(); i++) {
-            JSONObject task = (JSONObject) firstProjectTasks.get(i);
-            if (Integer.parseInt((String)(task).get("id")) == 1) {
+        for (Object firstProjectTask : firstProjectTasks) {
+            JSONObject task = (JSONObject) firstProjectTask;
+            if (Integer.parseInt((String) (task).get("id")) == 1) {
                 found = true;
                 break;
             }
         }
         assertTrue(found);
+    }
+
+    public static JSONArray fetchTodoList(String getRequest) throws Exception {
+        Request request = new Request.Builder()
+                .url(getRequest)
+                .get()
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+        String responseBody = response.body().string();
+
+        JSONParser parser = new JSONParser();
+        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
+
+        return (JSONArray) responseJson.get("todos");
+    }
+
+    public static JSONObject createNewTodoObject(String title, boolean doneStatus, String description) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("title", title);
+        jsonObject.put("doneStatus", doneStatus);
+        jsonObject.put("description", description);
+        return jsonObject;
+    }
+
+    public static void verifyTodoItemsAreUpdated(JSONArray initialTodos, JSONArray updatedTodos) {
+        // Verify that the previous TODO items are still there
+        for (Object initialTodoObject : initialTodos) {
+            JSONObject initialTodo = (JSONObject) initialTodoObject;
+            String initialId = (String) initialTodo.get("id");
+            String initialStatus = (String) initialTodo.get("doneStatus");
+            String initialDescription = (String) initialTodo.get("description");
 
 
+            boolean found = false;
+            for (Object updatedTodoObject : updatedTodos) {
+                JSONObject updatedTodo = (JSONObject) updatedTodoObject;
+                String updatedId = (String) updatedTodo.get("id");
+                String updatedStatus = (String) updatedTodo.get("doneStatus");
+                String updatedDescription = (String) updatedTodo.get("description");
+                if (initialId.equals(updatedId) && initialStatus.equals(updatedStatus) && initialDescription.equals(updatedDescription)) {
+                    found = true;
+                    break;
+                }
+            }
+            assertTrue(found, "Previous TODO item with ID " + initialId + " is different or not found");
+        }
+    }
 
+    public static void sendPostRequestToCreateTodoItem(JSONObject newTodo, String postRequest, int expectedCode) throws Exception {
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), newTodo.toString());
+        Request request = new Request.Builder()
+                .url(postRequest)
+                .post(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(expectedCode, response.code());
+
+        assert response.body() != null;
+        String responseBody = response.body().string();
+
+        JSONParser parser = new JSONParser();
+        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
+
+        String responseTitle = (String) responseJson.get("title");
+        boolean responseStatus = Boolean.parseBoolean(String.valueOf(responseJson.get("doneStatus")));
+        String responseDescription = (String) responseJson.get("description");
+
+        assertEquals(newTodo.get("title"), responseTitle);
+        assertEquals(newTodo.get("doneStatus"), responseStatus);
+        assertEquals(newTodo.get("description"), responseDescription);
+    }
+
+    public static void sendPutRequestToCreateTodoItem(JSONObject newTodo, String postRequest, int expectedCode) throws Exception {
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), newTodo.toString());
+        Request request = new Request.Builder()
+                .url(postRequest)
+                .put(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(expectedCode, response.code());
+
+        assert response.body() != null;
+        String responseBody = response.body().string();
+
+        JSONParser parser = new JSONParser();
+        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
+
+        String responseTitle = (String) responseJson.get("title");
+        boolean responseStatus = Boolean.parseBoolean(String.valueOf(responseJson.get("doneStatus")));
+        String responseDescription = (String) responseJson.get("description");
+
+        assertEquals(newTodo.get("title"), responseTitle);
+        assertEquals(newTodo.get("doneStatus"), responseStatus);
+        assertEquals(newTodo.get("description"), responseDescription);
     }
 }

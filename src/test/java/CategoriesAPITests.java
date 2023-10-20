@@ -43,69 +43,43 @@ public class CategoriesAPITests {
     //Create categories without a ID using the field values in the body of the message
     @Test
     public void testCategoriesFullPost() throws Exception {
+        // check categories object before post request
+        JSONArray initialCategories = fetchCategoryList("http://localhost:4567/categories");
+
+        // Create a new category item
         String title = "ECSE 429";
         String description =  "software validation!";
 
-        JSONObject jsonObject = new JSONObject();
+        JSONObject newCategoryObject = createNewCategoryObject(title, description);
 
-        jsonObject.put("title", title);
-        jsonObject.put("description", description);
+        //Send a POST request to add the new category item
+        sendPostRequestToCreateCategoryItem(newCategoryObject, "http://localhost:4567/categories", 201);
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+        //Fetch category items again
+        JSONArray updatedCategories = fetchCategoryList("http://localhost:4567/categories");
 
-        Request request = new Request.Builder()
-                .url("http://localhost:4567/categories")
-                .post(requestBody)
-                .build();
-
-        Response response = CommonTests.getClient().newCall(request).execute();
-        assert response.body() != null;
-        String responseBody = response.body().string();
-
-        JSONParser parser = new JSONParser();
-        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
-
-        String responseTitle = (String) responseJson.get("title");
-        String responseDescription = (String) responseJson.get("description");
-        String responseId = (String) responseJson.get("id");
-
-        assertEquals(201, response.code());
-        assertEquals(title, responseTitle);
-        assertEquals(description, responseDescription);
-        assertNotNull(responseId);
+        //Verify the previous category items are still there, and the new one is created
+        verifyCategoryObjectAreUpdated(initialCategories, updatedCategories);
     }
 
     //Create categories with only title in the body of the message
     @Test
     public void testCategoriesTitlePost() throws Exception {
+        // check category object before post request
+        JSONArray initialCategories = fetchCategoryList("http://localhost:4567/categories");
+
         String title = "ECSE 429";
 
-        JSONObject jsonObject = new JSONObject();
+        JSONObject newCategoryObject = createNewCategoryObject(title, "");
 
-        jsonObject.put("title", title);
+        //Send a POST request to add the new category item
+        sendPostRequestToCreateCategoryItem(newCategoryObject, "http://localhost:4567/categories", 201);
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+        //Fetch category items again
+        JSONArray updatedCategories = fetchCategoryList("http://localhost:4567/categories");
 
-        Request request = new Request.Builder()
-                .url("http://localhost:4567/categories")
-                .post(requestBody)
-                .build();
-
-        Response response = CommonTests.getClient().newCall(request).execute();
-        assert response.body() != null;
-        String responseBody = response.body().string();
-
-        JSONParser parser = new JSONParser();
-        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
-
-        String responseTitle = (String) responseJson.get("title");
-        String responseDescription = (String) responseJson.get("description");
-        String responseId = (String) responseJson.get("id");
-
-        assertEquals(201, response.code());
-        assertEquals(title, responseTitle);
-        assertEquals("", responseDescription);
-        assertNotNull(responseId);
+        //Verify the previous category items are still there, and the new one is created
+        verifyCategoryObjectAreUpdated(initialCategories, updatedCategories);
     }
 
     //Create categories with and ID
@@ -265,35 +239,33 @@ public class CategoriesAPITests {
     @Test
     public void testCategoriesPostWithValidID() throws Exception {
         String title = "ECSE 429";
-        boolean doneStatus = false;
         String description =  "validate your software B))";
 
-        JSONObject jsonObject = new JSONObject();
+        JSONObject newCategoryObject = createNewCategoryObject(title, description);
 
-        jsonObject.put("title", title);
-        jsonObject.put("description", description);
+        //Send a POST request to add the new category item
+        sendPostRequestToCreateCategoryItem(newCategoryObject, "http://localhost:4567/categories/1", 200);
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+        //Fetch category items again
+        JSONArray updatedCategories = fetchCategoryList("http://localhost:4567/categories");
 
-        Request request = new Request.Builder()
-                .url("http://localhost:4567/categories/1")
-                .post(requestBody)
-                .build();
+        //Verify the previous category items are still there, and the new one is created
+        for(Object categoryObject: updatedCategories){
+            JSONObject category = (JSONObject) categoryObject;
+            String id = (String) category.get("id");
+            String titleCheck = (String) category.get("title");
+            String descriptionCheck = (String) category.get("description");
 
-        Response response = CommonTests.getClient().newCall(request).execute();
-        assertEquals(200, response.code());
+            if(id.equals("1")){
+                assertEquals(title, titleCheck);
+                assertEquals(description, descriptionCheck);
+            }
 
-        assert response.body() != null;
-        String responseBody = response.body().string();
-
-        JSONParser parser = new JSONParser();
-        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
-
-        String id = (String) responseJson.get("id");
-        String actualTitle = (String) responseJson.get("title");
-        String actualDoneStatus = (String) responseJson.get("doneStatus");
-        assertEquals("1", id);
-        assertEquals(title, actualTitle);
+            if(id.equals("2")){
+                assertEquals("Home", titleCheck);
+                assertEquals("", descriptionCheck);
+            }
+        }
     }
 
     @Test
@@ -313,36 +285,33 @@ public class CategoriesAPITests {
     @Test
     public void testCategoriesPutWithValidID() throws Exception {
         String title = "pumpkin";
-        boolean doneStatus = false;
         String description =  "spice!";
 
-        JSONObject jsonObject = new JSONObject();
+        JSONObject newCategoryObject = createNewCategoryObject(title, description);
 
-        jsonObject.put("title", title);
-        jsonObject.put("description", description);
+        //Send a POST request to add the new category item
+        sendPutRequestToCreateCategoryItem(newCategoryObject, "http://localhost:4567/categories/1", 200);
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+        //Fetch category items again
+        JSONArray updatedCategories = fetchCategoryList("http://localhost:4567/categories");
 
-        Request request = new Request.Builder()
-                .url("http://localhost:4567/categories/1")
-                .put(requestBody)
-                .build();
+        //Verify the previous category items are still there, and the new one is created
+        for(Object categoryObject: updatedCategories){
+            JSONObject category = (JSONObject) categoryObject;
+            String id = (String) category.get("id");
+            String titleCheck = (String) category.get("title");
+            String descriptionCheck = (String) category.get("description");
 
-        Response response = CommonTests.getClient().newCall(request).execute();
-        assertEquals(200, response.code());
+            if(id.equals("1")){
+                assertEquals(title, titleCheck);
+                assertEquals(description, descriptionCheck);
+            }
 
-        assert response.body() != null;
-        String responseBody = response.body().string();
-
-        JSONParser parser = new JSONParser();
-        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
-
-        String id = (String) responseJson.get("id");
-        String actualTitle = (String) responseJson.get("title");
-        String actualDescription = (String) responseJson.get("description");
-        assertEquals("1", id);
-        assertEquals(title, actualTitle);
-        assertEquals(description, actualDescription);
+            if(id.equals("2")){
+                assertEquals("Home", titleCheck);
+                assertEquals("", descriptionCheck);
+            }
+        }
     }
 
     @Test
@@ -401,8 +370,8 @@ public class CategoriesAPITests {
 
     @Test
     public void testCategoriesPostExistingProjects() throws Exception {
-        String title = "pumpkin";
-        String description =  "spice!";
+        // check category object before post request
+        JSONArray initialCategories = fetchCategoryList("http://localhost:4567/categories");
 
         JSONObject jsonObject = new JSONObject();
 
@@ -418,16 +387,21 @@ public class CategoriesAPITests {
 
         Response response = CommonTests.getClient().newCall(request).execute();
         assert response.body() != null;
-        String responseBody = response.body().string();
 
         assertEquals(201, response.code());
         assertEquals("Created", response.message());
+
+        //Fetch category items again
+        JSONArray updatedCategories = fetchCategoryList("http://localhost:4567/categories");
+
+        //Verify the previous category items are still there, and the new one is created
+        verifyCategoryObjectAreUpdated(initialCategories, updatedCategories);
     }
 
     @Test
     public void testCategoriesPostNewProjects() throws Exception {
-        String title = "pumpkin";
-        String description =  "spice!";
+        // check category object before post request
+        JSONArray initialCategories = fetchCategoryList("http://localhost:4567/categories");
 
         JSONObject jsonObject = new JSONObject();
 
@@ -443,17 +417,19 @@ public class CategoriesAPITests {
 
         Response response = CommonTests.getClient().newCall(request).execute();
         assert response.body() != null;
-        String responseBody = response.body().string();
 
         assertEquals(201, response.code());
         assertEquals("Created", response.message());
+
+        //Fetch category items again
+        JSONArray updatedCategories = fetchCategoryList("http://localhost:4567/categories");
+
+        //Verify the previous category items are still there, and the new one is created
+        verifyCategoryObjectAreUpdated(initialCategories, updatedCategories);
     }
 
     @Test
     public void testCategoriesPostInvalidProjects() throws Exception {
-        String title = "pumpkin";
-        String description =  "spice!";
-
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put("id", "10");
@@ -500,8 +476,8 @@ public class CategoriesAPITests {
 
     @Test
     public void testCategoriesDeleteValidProjects() throws Exception {
-        String title = "pumpkin";
-        String description =  "spice!";
+        // check category object before post request
+        JSONArray initialCategories = fetchCategoryList("http://localhost:4567/categories");
 
         JSONObject jsonObject = new JSONObject();
 
@@ -529,13 +505,16 @@ public class CategoriesAPITests {
 
         assertEquals(200, response.code());
         assertEquals("OK", response.message());
+
+        //Fetch category items again
+        JSONArray updatedCategories = fetchCategoryList("http://localhost:4567/categories");
+
+        //Verify the previous category items are still there, and the new one is created
+        verifyCategoryObjectAreUpdated(initialCategories, updatedCategories);
     }
 
     @Test
     public void testCategoriesDeleteInvalidProjects() throws Exception {
-        String title = "pumpkin";
-        String description =  "spice!";
-
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put("id", "10");
@@ -568,8 +547,8 @@ public class CategoriesAPITests {
 
     @Test
     public void testCategoriesPostExistingTodos() throws Exception {
-        String title = "pumpkin";
-        String description =  "spice!";
+        // check category object before post request
+        JSONArray initialCategories = fetchCategoryList("http://localhost:4567/categories");
 
         JSONObject jsonObject = new JSONObject();
 
@@ -585,14 +564,21 @@ public class CategoriesAPITests {
 
         Response response = CommonTests.getClient().newCall(request).execute();
         assert response.body() != null;
-        String responseBody = response.body().string();
 
         assertEquals(201, response.code());
         assertEquals("Created", response.message());
+
+        //Fetch category items again
+        JSONArray updatedCategories = fetchCategoryList("http://localhost:4567/categories");
+
+        //Verify the previous category items are still there, and the new one is created
+        verifyCategoryObjectAreUpdated(initialCategories, updatedCategories);
     }
 
     @Test
     public void testCategoriesPostNewTodos() throws Exception {
+        // check category object before post request
+        JSONArray initialCategories = fetchCategoryList("http://localhost:4567/categories");
 
         JSONObject jsonObject = new JSONObject();
 
@@ -610,13 +596,16 @@ public class CategoriesAPITests {
         assert response.body() != null;
         assertEquals(201, response.code());
         assertEquals("Created", response.message());
+
+        //Fetch category items again
+        JSONArray updatedCategories = fetchCategoryList("http://localhost:4567/categories");
+
+        //Verify the previous category items are still there, and the new one is created
+        verifyCategoryObjectAreUpdated(initialCategories, updatedCategories);
     }
 
     @Test
     public void testCategoriesPostInvalidTodos() throws Exception {
-        String title = "pumpkin";
-        String description =  "spice!";
-
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put("id", "10");
@@ -684,8 +673,8 @@ public class CategoriesAPITests {
 
     @Test
     public void testCategoriesDeleteValidTodos() throws Exception {
-        String title = "pumpkin";
-        String description =  "spice!";
+        // check category object before post request
+        JSONArray initialCategories = fetchCategoryList("http://localhost:4567/categories");
 
         JSONObject jsonObject = new JSONObject();
 
@@ -713,13 +702,16 @@ public class CategoriesAPITests {
 
         assertEquals(200, response.code());
         assertEquals("OK", response.message());
+
+        //Fetch category items again
+        JSONArray updatedCategories = fetchCategoryList("http://localhost:4567/categories");
+
+        //Verify the previous category items are still there, and the new one is created
+        verifyCategoryObjectAreUpdated(initialCategories, updatedCategories);
     }
 
     @Test
     public void testCategoriesDeleteInvalidTodos() throws Exception {
-        String title = "pumpkin";
-        String description =  "spice!";
-
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put("id", "10");
@@ -815,7 +807,8 @@ public class CategoriesAPITests {
 
     @Test
     public void testCategoryProjectRelationshipDeleteValid() throws Exception {
-
+        // check category object before post request
+        JSONArray initialCategories = fetchCategoryList("http://localhost:4567/categories");
 
         JSONObject jsonObject = new JSONObject();
 
@@ -841,12 +834,17 @@ public class CategoriesAPITests {
         response = CommonTests.getClient().newCall(request).execute();
         assertEquals(200, response.code());
 
+        //Fetch category items again
+        JSONArray updatedCategories = fetchCategoryList("http://localhost:4567/categories");
 
+        //Verify the previous category items are still there, and the new one is created
+        verifyCategoryObjectAreUpdated(initialCategories, updatedCategories);
     }
 
     @Test
     public void testCategoryProjectRelationshipDeleteDoubleInvalid() throws Exception {
-
+        // check category object before post request
+        JSONArray initialCategories = fetchCategoryList("http://localhost:4567/categories");
 
         JSONObject jsonObject = new JSONObject();
 
@@ -880,7 +878,11 @@ public class CategoriesAPITests {
         response = CommonTests.getClient().newCall(request).execute();
         assertEquals(404, response.code());
 
+        //Fetch category items again
+        JSONArray updatedCategories = fetchCategoryList("http://localhost:4567/categories");
 
+        //Verify the previous category items are still there, and the new one is created
+        verifyCategoryObjectAreUpdated(initialCategories, updatedCategories);
     }
     
     //method not allowed and not in api documentation
@@ -908,6 +910,97 @@ public class CategoriesAPITests {
         assert response.body() != null;
         assertEquals(404, response.code());
         assertEquals("Not Found", response.message());
+    }
+
+    public static JSONArray fetchCategoryList(String getRequest) throws Exception {
+        Request request = new Request.Builder()
+                .url(getRequest)
+                .get()
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+        String responseBody = response.body().string();
+
+        JSONParser parser = new JSONParser();
+        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
+
+        return (JSONArray) responseJson.get("categories");
+    }
+
+    public static JSONObject createNewCategoryObject(String title, String description) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("title", title);
+        jsonObject.put("description", description);
+        return jsonObject;
+    }
+
+    public static void verifyCategoryObjectAreUpdated(JSONArray initialCategories, JSONArray updatedCategories) {
+        // Verify that the previous Category items are still there
+        for (Object initialCategoryObject : initialCategories) {
+            JSONObject initialCategory = (JSONObject) initialCategoryObject;
+            String initialId = (String) initialCategory.get("id");
+            String initialDescription = (String) initialCategory.get("description");
+
+
+            boolean found = false;
+            for (Object updatedCategoryObject : updatedCategories) {
+                JSONObject updatedCategory = (JSONObject) updatedCategoryObject;
+                String updatedId = (String) updatedCategory.get("id");
+                String updatedDescription = (String) updatedCategory.get("description");
+                if (initialId.equals(updatedId) && initialDescription.equals(updatedDescription)) {
+                    found = true;
+                    break;
+                }
+            }
+            assertTrue(found, "Previous Category item with ID " + initialId + " is different or not found");
+        }
+    }
+
+    public static void sendPostRequestToCreateCategoryItem(JSONObject newCategory, String postRequest, int expectedCode) throws Exception {
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), newCategory.toString());
+        Request request = new Request.Builder()
+                .url(postRequest)
+                .post(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(expectedCode, response.code());
+
+        assert response.body() != null;
+        String responseBody = response.body().string();
+
+        JSONParser parser = new JSONParser();
+        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
+
+        String responseTitle = (String) responseJson.get("title");
+        String responseDescription = (String) responseJson.get("description");
+
+        assertEquals(newCategory.get("title"), responseTitle);
+        assertEquals(newCategory.get("description"), responseDescription);
+    }
+
+    public static void sendPutRequestToCreateCategoryItem(JSONObject newCategory, String postRequest, int expectedCode) throws Exception {
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), newCategory.toString());
+        Request request = new Request.Builder()
+                .url(postRequest)
+                .put(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(expectedCode, response.code());
+
+        assert response.body() != null;
+        String responseBody = response.body().string();
+
+        JSONParser parser = new JSONParser();
+        JSONObject responseJson = (JSONObject) parser.parse(responseBody);
+
+        String responseTitle = (String) responseJson.get("title");
+        String responseDescription = (String) responseJson.get("description");
+
+        assertEquals(newCategory.get("title"), responseTitle);
+        assertEquals(newCategory.get("description"), responseDescription);
     }
 
 }

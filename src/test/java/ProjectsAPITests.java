@@ -1,4 +1,5 @@
 import okhttp3.*;
+import org.json.XML;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -87,12 +88,12 @@ public class ProjectsAPITests {
         assertEquals("This is my project.", responseObj.get("description"));
     }
 
-    // Putting a non-existent field; field not found error
+    // Putting the wrong type for a field (active)
     @Test
-    public void projectsPostWrongFieldRequest() throws IOException, ParseException {
+    public void projectsPostIncorrectValueRequest() throws IOException, ParseException {
         // Create a JSON object for the request body
         JSONObject obj = new JSONObject();
-        obj.put("tile", "MyProject");
+        obj.put("active", "yes");
 
         RequestBody requestBody = RequestBody.create(obj.toString(),
                 MediaType.parse("application/json"));
@@ -112,7 +113,7 @@ public class ProjectsAPITests {
         JSONArray arr = (JSONArray) parser.parse(responseObj.get("errorMessages").toString());
 
         // Verify correct message
-        assertEquals("Could not find field: tile", arr.get(0));
+        assertEquals("Failed Validation: active should be BOOLEAN", arr.get(0));
     }
 
     /* Projects (with ID) */
@@ -338,6 +339,56 @@ public class ProjectsAPITests {
 
         // Verify correct message
         assertEquals("Could not find any instances with projects/" + id, arr.get(0));
+    }
+
+    // Non-existent field, malformed JSON
+    @Test
+    public void projectsPostMalformedJSON() throws IOException, ParseException {
+        // Create a JSON object for the request body
+        JSONObject obj = new JSONObject();
+        obj.put("malformed", "MyProject");
+
+        RequestBody requestBody = RequestBody.create(obj.toString(),
+                MediaType.parse("application/json"));
+
+        Request request = new Request.Builder()
+                .url(url + "projects")
+                .post(requestBody)
+                .build();
+
+        // Ensure response was bad request
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(400, response.code());
+        String responseBody = response.body().string();
+
+        JSONParser parser = new JSONParser();
+        JSONObject responseObj = (JSONObject) parser.parse(responseBody);
+        JSONArray arr = (JSONArray) parser.parse(responseObj.get("errorMessages").toString());
+
+        // Verify correct message
+        assertEquals("Could not find field: malformed", arr.get(0));
+    }
+
+    // malformed XML; similar to previous test
+    @Test
+    public void projectsPostMalformedXML() throws IOException, ParseException {
+        // Create an XML object for the request body
+        JSONObject obj = new JSONObject();
+        obj.put("malformed", "MyProject");
+
+        String xmlString = XML.toString(obj);
+
+        RequestBody requestBody = RequestBody.create(xmlString.toString(),
+                MediaType.parse("text/xml; charset=utf-8"));
+
+        Request request = new Request.Builder()
+                .url(url + "projects")
+                .post(requestBody)
+                .build();
+
+        // Ensure response was bad request
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(400, response.code());
     }
 
 }

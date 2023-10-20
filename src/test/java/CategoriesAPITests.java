@@ -749,5 +749,165 @@ public class CategoriesAPITests {
     }
 
 
+    //interoperability
+
+    //----------------------------------------------------------- categories/:id/projects/:id
+    
+    //method not allowed and not in api documentation
+    @Test
+    public void testCategoryProjectRelationshipGet() throws Exception {
+        Request request = new Request.Builder()
+            .url("http://localhost:4567/categories/1/projects/1")
+            .get()
+            .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+        assertEquals(404, response.code());
+        assertEquals("Not Found", response.message());
+    }
+
+    //method not allowed and not in api documentation
+    @Test
+    public void testCategoryProjectRelationshipPost() throws Exception {
+        RequestBody dummyBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), "");
+
+        Request request = new Request.Builder()
+            .url("http://localhost:4567/categories/1/projects/1")
+            .post(dummyBody)
+            .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+        assertEquals(404, response.code());
+        assertEquals("Not Found", response.message());
+    }
+
+    //method not allowed and not in api documentation
+    @Test
+    public void testCategoryProjectRelationshipPut() throws Exception {
+        RequestBody dummyBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), "");
+        Request request = new Request.Builder()
+            .url("http://localhost:4567/categories/1/projects/1")
+            .put(dummyBody)
+            .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+        assertEquals(405, response.code());
+        assertEquals("Method Not Allowed", response.message());
+    }
+
+    //method not allowed and not in api documentation
+    @Test
+    public void testCategoryProjectRelationshipPatch() throws Exception {
+        RequestBody dummyBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), "");
+        Request request = new Request.Builder()
+            .url("http://localhost:4567/categories/1/projects/1")
+            .patch(dummyBody)
+            .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+        assertEquals(405, response.code());
+        assertEquals("Method Not Allowed", response.message());
+    }
+
+    @Test
+    public void testCategoryProjectRelationshipDeleteValid() throws Exception {
+
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("title", "latte");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+            .url("http://localhost:4567/categories/1/projects")
+            .post(requestBody)
+            .build();
+
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(201, response.code());
+        assertEquals("Created", response.message());
+
+        request = new Request.Builder()
+            .url("http://localhost:4567/categories/1/projects/2")
+            .delete()
+            .build();
+
+        response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(200, response.code());
+
+
+    }
+
+    @Test
+    public void testCategoryProjectRelationshipDeleteDoubleInvalid() throws Exception {
+
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("title", "latte");
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+            .url("http://localhost:4567/categories/1/projects")
+            .post(requestBody)
+            .build();
+
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(201, response.code());
+        assertEquals("Created", response.message());
+
+        request = new Request.Builder()
+            .url("http://localhost:4567/categories/1/projects/2")
+            .delete()
+            .build();
+
+        response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(200, response.code());
+
+        request = new Request.Builder()
+            .url("http://localhost:4567/categories/1/projects/2")
+            .delete()
+            .build();
+
+        response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(404, response.code());
+
+
+    }
+    
+    //method not allowed and not in api documentation
+    @Test
+    public void testCategoryProjectRelationshipDeleteInvalid() throws Exception {
+        Request request = new Request.Builder()
+            .url("http://localhost:4567/categories/1/projects/2023")
+            .delete()
+            .build();
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(404, response.code());
+        assertEquals("Not Found", response.message());
+
+    }
+
+    //method not allowed and not in api documentation
+    @Test
+    public void testCategoryProjectRelationshipHead() throws Exception {
+        Request request = new Request.Builder()
+            .url("http://localhost:4567/categories/1/projects/1")
+            .head()
+            .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+        assert response.body() != null;
+        assertEquals(404, response.code());
+        assertEquals("Not Found", response.message());
+    }
 
 }

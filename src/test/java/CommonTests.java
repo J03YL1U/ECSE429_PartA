@@ -13,12 +13,11 @@ public class CommonTests implements BeforeTestExecutionCallback, AfterTestExecut
 
     public void beforeTestExecution(ExtensionContext context) {
         try {
-            String filePath = "C:\\Users\\Joey\\OneDrive - McGill University\\Desktop\\MCGILLCourses\\FALL2023\\ECSE429\\" +
-                    "Application_Being_Tested\\runTodoManagerRestAPI-1.5.5.jar";
+            String filePath = "src\\test\\java\\runTodoManagerRestAPI-1.5.5.jar";
             ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", filePath);
             processBuilder.start();
 
-            Thread.sleep(250);
+            Thread.sleep(500);
 
             Request request = new Request.Builder()
                     .url("http://localhost:4567/")

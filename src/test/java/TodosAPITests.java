@@ -7,6 +7,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.json.XML;
 
 @TestMethodOrder(MethodOrderer.Random.class)
 @ExtendWith(CommonTests.class)
@@ -61,6 +62,7 @@ public class TodosAPITests {
                 .build();
 
         Response response = CommonTests.getClient().newCall(request).execute();
+        assertEquals(201, response.code());
         assert response.body() != null;
         String responseBody = response.body().string();
 
@@ -605,5 +607,50 @@ public class TodosAPITests {
 
         assertEquals(405, response.code());
         assertEquals("Method Not Allowed", response.message());
+    }
+
+    @Test
+    public void testTodosPostMalformedJson() throws Exception {
+        String title = "Joey";
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("malformed", title);
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos")
+                .post(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+
+        assertEquals(400, response.code());
+        assertEquals("Bad Request", response.message());
+    }
+
+    @Test
+    public void testTodosPostMalformedXML() throws Exception {
+        String title = "Joey";
+
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("malformed", title);
+
+        String xmlString = XML.toString(jsonObject);
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/xml; charset=utf-8"), xmlString.toString());
+
+        Request request = new Request.Builder()
+                .url("http://localhost:4567/todos")
+                .post(requestBody)
+                .build();
+
+        Response response = CommonTests.getClient().newCall(request).execute();
+
+        assertEquals(400, response.code());
+        assertEquals("Bad Request", response.message());
+
     }
 }

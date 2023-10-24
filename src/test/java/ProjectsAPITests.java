@@ -22,7 +22,7 @@ public class ProjectsAPITests {
     /* Projects (GET, HEAD, POST) */
     // Get all projects available
     @Test
-    public void projectsGetRequest() throws IOException {
+    public void testProjectsGetRequest() throws IOException {
         Request request = new Request.Builder()
                 .url(url + "projects")
                 .get()
@@ -35,7 +35,7 @@ public class ProjectsAPITests {
 
     // Try executing a GET request with an incorrect URL
     @Test
-    public void projectsGetWrongRequest() throws IOException {
+    public void testProjectsGetWrongRequest() throws IOException {
         Request request = new Request.Builder()
                 .url(url + "project")
                 .get()
@@ -47,7 +47,7 @@ public class ProjectsAPITests {
 
     // Receive headers
     @Test
-    public void projectsHeadRequest() throws IOException {
+    public void testProjectsHeadRequest() throws IOException {
         Request request = new Request.Builder()
                 .url(url + "projects")
                 .head()
@@ -61,7 +61,7 @@ public class ProjectsAPITests {
 
     // Create a new project using title and description
     @Test
-    public void projectsPostRequest() throws IOException, ParseException {
+    public void testProjectsPostRequest() throws IOException, ParseException {
         // Create a JSON object for the request body
         JSONObject obj = new JSONObject();
         obj.put("title", "MyProject");
@@ -90,7 +90,7 @@ public class ProjectsAPITests {
 
     // Putting the wrong type for a field (active)
     @Test
-    public void projectsPostIncorrectValueRequest() throws IOException, ParseException {
+    public void testProjectsPostIncorrectValueRequest() throws IOException, ParseException {
         // Create a JSON object for the request body
         JSONObject obj = new JSONObject();
         obj.put("active", "yes");
@@ -119,7 +119,7 @@ public class ProjectsAPITests {
     /* Projects (with ID) */
     // Get the first project in the system
     @Test
-    public void projectsIDGetRequest() throws IOException, ParseException {
+    public void testProjectsIDGetRequest() throws IOException, ParseException {
         // Get the default project when a system starts (ID = 1)
         int id = 1;
 
@@ -143,7 +143,7 @@ public class ProjectsAPITests {
 
     // Get project request with ID that doesn't exist
     @Test
-    public void projectsIDGetInvalidRequest() throws IOException, ParseException {
+    public void testProjectsIDGetInvalidRequest() throws IOException, ParseException {
         // Get an invalid project id
         int id = 2;
         String error = "Could not find an instance with projects/" + id;
@@ -166,7 +166,7 @@ public class ProjectsAPITests {
     }
 
     @Test
-    public void projectsIDHeadRequest() throws IOException {
+    public void testProjectsIDHeadRequest() throws IOException {
         // Get the default project when a system starts (ID = 1)
         int id = 1;
 
@@ -183,7 +183,7 @@ public class ProjectsAPITests {
 
     // Regular post request for original project
     @Test
-    public void projectsIDPostRequest() throws IOException, ParseException {
+    public void testProjectsIDPostRequest() throws IOException, ParseException {
         // Get the default project when a system starts (ID = 1)
         int id = 1;
 
@@ -222,7 +222,7 @@ public class ProjectsAPITests {
 
     // Post request for project with ID that does not exist
     @Test
-    public void projectsIDPostErrRequest() throws IOException, ParseException {
+    public void testProjectsIDPostErrRequest() throws IOException, ParseException {
         // Get a project that does not exist to test
         int id = 2;
 
@@ -254,7 +254,7 @@ public class ProjectsAPITests {
 
     // Create a new project then update it
     @Test
-    public void projectsIDPutRequest() throws IOException, ParseException, InterruptedException {
+    public void testProjectsIDPutRequest() throws IOException, ParseException, InterruptedException {
         // Create a project first
         // Get the default project when a system starts (ID = 1)
         int id = 2;
@@ -305,7 +305,7 @@ public class ProjectsAPITests {
 
     // Delete the original project
     @Test
-    public void projectsIDDeleteRequest() throws IOException {
+    public void testProjectsIDDeleteRequest() throws IOException {
         // Get the default project when a system starts (ID = 1)
         int id = 1;
 
@@ -320,7 +320,7 @@ public class ProjectsAPITests {
 
     // Try to delete a project not found
     @Test
-    public void projectsIDDeleteInvalidRequest() throws IOException, ParseException {
+    public void testProjectsIDDeleteInvalidRequest() throws IOException, ParseException {
         // Use an ID that doesn't exist
         int id = 3;
 
@@ -343,7 +343,7 @@ public class ProjectsAPITests {
 
     // Non-existent field, malformed JSON
     @Test
-    public void projectsPostMalformedJSON() throws IOException, ParseException {
+    public void testProjectsPostMalformedJSON() throws IOException, ParseException {
         // Create a JSON object for the request body
         JSONObject obj = new JSONObject();
         obj.put("malformed", "MyProject");
@@ -371,7 +371,7 @@ public class ProjectsAPITests {
 
     // malformed XML; similar to previous test
     @Test
-    public void projectsPostMalformedXML() throws IOException, ParseException {
+    public void testProjectsPostMalformedXML() throws IOException, ParseException {
         // Create an XML object for the request body
         JSONObject obj = new JSONObject();
         obj.put("malformed", "MyProject");
